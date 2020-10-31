@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script type='text/javascript'>
+        var artoolkit_wasm_url = 'libs/jsartoolkit5/build/artoolkit_wasm.wasm';
+    </script>
+    <script src= "libs/jsartoolkit5/build/artoolkit_wasm.js"></script>
+    <script src= "libs/jsartoolkit5/js/artoolkit.three.js"></script>
+    <script src= "libs/threeJS/build/three.js"></script>
+
+    <script type = "module">
+        import { GLTFLoader } from "./libs/threeJS/jsm/GLTFLoader.js";
+
+        ARController.getUserMediaThreeScene({
+            maxARVideoSize: 320,
+            cameraParam: "libs/jsartoolkit5/data/camera_para.dat",
+            facing: "environment",
+            onSuccess: function(arScene, arController, arCamera) 
+            {
+                document.body.className = arController.orientation;
+
+                var renderer =  new THREE.WebGLRenderer({antialias : true});
+                if (arController.orientation === 'portrait') 
+                {
+                    var w = (window.innerWidth / arController.videoHeight) * arController.videoWidth;
+                    var h = window.innerWidth;
+                    renderer.setSize(w, h);
+                    renderer.domElement.style.paddingBottom = (w-h) + 'px';
+      		    } 
+                else 
+                {
+                    if (/Android|mobile|iPad|iPhone/i.test(navigator.userAgent)) {
+                        renderer.setSize(window.innerWidth, (window.innerWidth / arController.videoWidth) * arController.videoHeight);
+                    } 
+                    else 
+                    {
+                        renderer.setSize(arController.videoWidth, arController.videoHeight);
+                        document.body.className += ' desktop';
+      			    }
+      		    }
+
+      		    document.body.insertBefore(renderer.domElement, document.body.firstChild);
+                
+                var model;
+                var texture = new THREE.TextureLoader().load("assets/images/bird-render.png");
+                var alphaTexture = new THREE.TextureLoader().load("assets/images/bird-colouring-book-alpha-2.png")
+                texture.flipY = false;
+                alphaTexture.flipY = false;
+                var birdMaterial = new THREE.MeshBasicMaterial({
+                    map : texture, 
+                    alphaMap : alphaTexture,
+                    alphaTest : 0.5,
+                    transparent : false,
+                    side: THREE.DoubleSide});
+
+                const loader = new GLTFLoader().setPath("../assets/models/");
+                loader.load(
+                    "bird.glb",
+                    function(gltf)
+                    {
+                        model = gltf.scene.children[0];
+                        model.name = "Bird";
+                        model.scale.set(20,20,20);
+                        model.rotation.x = (Math.PI/2);
+                        model.position.set(150,150,50);
+                        model.traverse((o) => {
+                            if (o.isMesh) o.material = birdMaterial;
+                            });
+                    },
+                        // called while loading is progressing
+                    function ( xhr ) 
+                    {
+                        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                    },
+
+                    // called when loading has errors
+                    function ( error ) 
+                    {
+                        console.log( 'An error happened' );
+                    }
+                )
+
+                arController.loadNFTMarker('assets/DataNFT/coloring3d-bear-small', function(markerId) {
+                    var markerRoot = arController.createThreeNFTMarker(markerId);
+                    markerRoot.add(model);
+                    arScene.scene.add(markerRoot);
+                });
+                
+                
+
+                function animate()
+                {
+                    arScene.process();
+
+                    arScene.renderOn(renderer);
+                    requestAnimationFrame(animate);
+                }
+
+                animate();
+            }
+        })
+
+
+
+    </script>
+</body>
+</html>

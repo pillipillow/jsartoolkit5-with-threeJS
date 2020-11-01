@@ -35,13 +35,13 @@
 
                 if (arController.orientation === 'portrait') 
                 {
-                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    renderer.setSize(h, w);
                     renderer.domElement.style.transformOrigin = '0 0';
                     renderer.domElement.style.transform = 'rotate(-90deg) translateX(-100%)';
                 } 
                 else 
                 {
-                    renderer.setSize(window.innerWidth,window.innerHeight);
+                    renderer.setSize(w,h);
                 }
 
       		    document.body.insertBefore(renderer.domElement, document.body.firstChild);

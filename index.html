@@ -26,7 +26,24 @@
                 document.body.className = arController.orientation;
 
                 var renderer =  new THREE.WebGLRenderer({antialias : true});
-              
+
+                var f = Math.min(window.innerWidth / arScene.video.videoWidth,
+                                 window.innerHeight / arScene.video.videoHeight);
+
+		        var w = f * arScene.video.videoWidth;
+		        var h = f * arScene.video.videoHeight;
+
+                if (arController.orientation === 'portrait') 
+                {
+                    renderer.setSize(h,w);
+                    renderer.domElement.style.transformOrigin = '0 0';
+                    renderer.domElement.style.transform = 'rotate(-90deg) translateX(-100%)';
+                } 
+                else 
+                {
+                    renderer.setSize(w,h);
+                }
+
       		    document.body.insertBefore(renderer.domElement, document.body.firstChild);
                 
                 var model;
